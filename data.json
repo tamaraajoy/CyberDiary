@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Pengantar Jaringan Komputer",
+    "date": "2025-11-05",
+    "description": "Belajar dasar-dasar jaringan komputer, topologi, dan perangkatnya.",
+    "image": "images/materi1.png"
+  },
+  {
+    "title": "Model OSI dan TCP/IP",
+    "date": "2025-11-05",
+    "description": "Pahami bagaimana data dikirim dan diterima di jaringan.",
+    "image": "images/materi2.png"
+  }
+]

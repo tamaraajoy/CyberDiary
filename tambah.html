@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tambah Materi | CyberLearn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .form-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    label {
+      font-weight: 600;
+      color: #4f46e5;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 2px solid #c7d2fe;
+      font-family: "Poppins", sans-serif;
+      font-size: 14px;
+      transition: 0.2s;
+      background-color: #f9fafb;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #818cf8;
+      background-color: #eef2ff;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .btn-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn-home {
+      background: #60a5fa;
+      color: white;
+    }
+
+    .btn-submit {
+      background: #34d399;
+      color: white;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <h1>🌼 Tambah Materi</h1>
+    <button onclick="window.location.href='index.html'">🏠 Home</button>
+  </div>
+
+  <div class="container">
+    <h2 style="text-align:center;">📝 Buat Materi Baru</h2>
+
+    <form id="materiForm" class="form-container">
+      <div>
+        <label for="title">Judul Materi</label>
+        <input type="text" id="title" placeholder="Contoh: Pengenalan Jaringan Komputer" required>
+      </div>
+
+      <div>
+        <label for="image">URL Gambar</label>
+        <input type="text" id="image" placeholder="https://contoh-gambar.com/jaringan.png">
+      </div>
+
+      <div>
+        <label for="desc">Deskripsi Singkat</label>
+        <textarea id="desc" placeholder="Tuliskan deskripsi singkat materi ini..." required></textarea>
+      </div>
+
+      <div class="btn-container">
+        <button type="button" class="btn btn-home" onclick="window.location.href='index.html'">🏠 Kembali ke Home</button>
+        <button type="submit" class="btn btn-submit">✨ Lanjut Menulis Isi</button>
+      </div>
+    </form>
+  </div>
+
+  <footer>© 2025 CyberLearn — Belajar Menyenangkan 🌈</footer>
+
+  <script>
+    const form = document.getElementById("materiForm");
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      let materiData = JSON.parse(localStorage.getItem("materiData")) || [];
+      let newMateri = {
+        title: title.value,
+        image: image.value || "https://placehold.co/600x400?text=CyberLearn",
+        desc: desc.value,
+        content: ""
+      };
+      materiData.push(newMateri);
+      localStorage.setItem("materiData", JSON.stringify(materiData));
+      localStorage.setItem("currentMateri", materiData.length - 1);
+      window.location.href = "detail.html";
+    });
+  </script>
+</body>
+</html>

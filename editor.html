@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor Materi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Tulis Isi Materi</h1>
+    <nav><a href="admin.html">← Kembali</a></nav>
+  </header>
+
+  <main style="padding:2rem;">
+    <div contenteditable="true" id="editor" 
+         style="background:#fff; padding:1rem; min-height:300px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <p>Tulis isi materi di sini...</p>
+    </div>
+    <button id="simpan" style="margin-top:1rem;">Simpan Materi</button>
+  </main>
+
+  <script>
+    const materi = JSON.parse(localStorage.getItem('materi_baru') || '{}');
+    document.getElementById('simpan').addEventListener('click', () => {
+      materi.content = document.getElementById('editor').innerHTML;
+      const semua = JSON.parse(localStorage.getItem('materi') || '[]');
+      semua.push(materi);
+      localStorage.setItem('materi', JSON.stringify(semua));
+      alert('Materi disimpan!');
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>

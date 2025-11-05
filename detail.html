@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detail Materi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="navbar">
+    <h1>📖 CyberLearn</h1>
+    <button onclick="goHome()">🏠 Home</button>
+  </div>
+
+  <div class="container">
+    <div class="toolbar">
+      <button id="editBtn">✏️ Edit</button>
+      <button id="saveBtn" style="display:none;">💾 Simpan</button>
+      <button id="deleteBtn">🗑 Hapus</button>
+    </div>
+
+    <img id="materiImg" src="" alt="Gambar Materi">
+    <h1 id="materiTitle" contenteditable="false" class="editable"></h1>
+    <p id="materiDesc" contenteditable="false" class="editable"></p>
+    <hr style="margin:20px 0; border:1px dashed #c7d2fe;">
+    <div id="materiContent"></div>
+  </div>
+
+  <footer>🌼 CyberLearn — Yuk Belajar dengan Ceria! 🌈</footer>
+
+  <script>
+    let materiData = JSON.parse(localStorage.getItem("materiData")) || [];
+    let currentIndex = localStorage.getItem("currentMateri");
+    let materi = materiData[currentIndex];
+    let editor;
+
+    document.getElementById("materiImg").src = materi.image;
+    document.getElementById("materiTitle").innerText = materi.title;
+    document.getElementById("materiDesc").innerText = materi.desc;
+    document.getElementById("materiContent").innerHTML = materi.content || "<p><i>(Belum ada isi materi)</i></p>";
+
+    function goHome() {
+      window.location.href = "index.html";
+    }
+
+    const editBtn = document.getElementById("editBtn");
+    const saveBtn = document.getElementById("saveBtn");
+
+    editBtn.addEventListener("click", () => {
+      document.getElementById("materiTitle").contentEditable = "true";
+      document.getElementById("materiDesc").contentEditable = "true";
+
+      ClassicEditor
+        .create(document.querySelector("#materiContent"), {
+          toolbar: [
+            'heading', '|', 'bold', 'italic', 'link', 'bulletedList',
+            'numberedList', 'blockQuote', 'insertTable', 'undo', 'redo', 'imageUpload'
+          ]
+        })
+        .then(newEditor => {
+          editor = newEditor;
+          editBtn.style.display = "none";
+          saveBtn.style.display = "inline-block";
+        })
+        .catch(error => console.error(error));
+    });
+
+    saveBtn.addEventListener("click", () => {
+      materi.title = document.getElementById("materiTitle").innerText.trim();
+      materi.desc = document.getElementById("materiDesc").innerText.trim();
+      materi.content = editor.getData();
+      localStorage.setItem("materiData", JSON.stringify(materiData));
+      alert("✅ Materi berhasil disimpan!");
+      location.reload();
+    });
+
+    document.getElementById("deleteBtn").addEventListener("click", () => {
+      if (confirm("Yakin ingin menghapus materi ini?")) {
+        materiData.splice(currentIndex, 1);
+        localStorage.setItem("materiData", JSON.stringify(materiData));
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+</body>
+</html>
