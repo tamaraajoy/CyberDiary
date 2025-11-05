@@ -6,11 +6,138 @@
   <title>Detail Materi</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #fef6ff, #e0e7ff);
+      margin: 0;
+      padding: 0;
+      color: #1e293b;
+    }
+
+    .navbar {
+      background: #7c3aed;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .navbar h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .navbar button {
+      background: white;
+      color: #7c3aed;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .navbar button:hover {
+      background: #ede9fe;
+    }
+
+    .container {
+      max-width: 900px;
+      background: white;
+      margin: 40px auto;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+      padding: 32px;
+      transition: 0.3s;
+    }
+
+    img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 10px;
+      transition: 0.3s;
+    }
+
+    .change-img-btn {
+      display: block;
+      margin: 0 auto 24px;
+      background: #9333ea;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .change-img-btn:hover {
+      background: #a855f7;
+    }
+
+    h1.editable, p.editable {
+      border: 1px solid transparent;
+      padding: 6px;
+      border-radius: 8px;
+      transition: 0.2s;
+    }
+
+    h1.editable:focus, p.editable:focus {
+      outline: none;
+      border-color: #7c3aed;
+      background: #f5f3ff;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    #editBtn { background: #7c3aed; color: white; }
+    #saveBtn { background: #10b981; color: white; }
+    #deleteBtn { background: #ef4444; color: white; }
+    button:hover { transform: scale(1.05); }
+
+    #materiContent {
+      margin-top: 20px;
+      line-height: 1.8;
+      color: #334155;
+    }
+
+    footer {
+      text-align: center;
+      padding: 16px;
+      color: #64748b;
+      font-size: 14px;
+      margin-top: 40px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <div class="navbar">
-    <h1>📖 CyberLearn</h1>
+    <h1>📖 CyberDiary</h1>
     <button onclick="goHome()">🏠 Home</button>
   </div>
 
@@ -22,13 +149,18 @@
     </div>
 
     <img id="materiImg" src="" alt="Gambar Materi">
+    <input type="file" id="imgUpload" accept="image/*">
+    <button class="change-img-btn" id="changeImgBtn" style="display:none;">🖼 Ganti Gambar</button>
+
     <h1 id="materiTitle" contenteditable="false" class="editable"></h1>
     <p id="materiDesc" contenteditable="false" class="editable"></p>
-    <hr style="margin:20px 0; border:1px dashed #c7d2fe;">
+    <hr style="margin:20px 0; border:1px solid #e5e7eb;">
     <div id="materiContent"></div>
   </div>
 
-  <footer>🌼 CyberLearn — Yuk Belajar dengan Ceria! 🌈</footer>
+  <footer>
+    © 2025 CyberDiary — Personal Learning Journal
+  </footer>
 
   <script>
     let materiData = JSON.parse(localStorage.getItem("materiData")) || [];
@@ -36,7 +168,13 @@
     let materi = materiData[currentIndex];
     let editor;
 
-    document.getElementById("materiImg").src = materi.image;
+    const materiImg = document.getElementById("materiImg");
+    const imgUpload = document.getElementById("imgUpload");
+    const changeImgBtn = document.getElementById("changeImgBtn");
+    const editBtn = document.getElementById("editBtn");
+    const saveBtn = document.getElementById("saveBtn");
+
+    materiImg.src = materi.image;
     document.getElementById("materiTitle").innerText = materi.title;
     document.getElementById("materiDesc").innerText = materi.desc;
     document.getElementById("materiContent").innerHTML = materi.content || "<p><i>(Belum ada isi materi)</i></p>";
@@ -45,12 +183,10 @@
       window.location.href = "index.html";
     }
 
-    const editBtn = document.getElementById("editBtn");
-    const saveBtn = document.getElementById("saveBtn");
-
     editBtn.addEventListener("click", () => {
       document.getElementById("materiTitle").contentEditable = "true";
       document.getElementById("materiDesc").contentEditable = "true";
+      changeImgBtn.style.display = "block";
 
       ClassicEditor
         .create(document.querySelector("#materiContent"), {
@@ -67,15 +203,35 @@
         .catch(error => console.error(error));
     });
 
+    // Ganti gambar
+    changeImgBtn.addEventListener("click", () => {
+      imgUpload.click();
+    });
+
+    imgUpload.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          materiImg.src = e.target.result;
+          materi.image = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Simpan perubahan
     saveBtn.addEventListener("click", () => {
       materi.title = document.getElementById("materiTitle").innerText.trim();
       materi.desc = document.getElementById("materiDesc").innerText.trim();
       materi.content = editor.getData();
+
       localStorage.setItem("materiData", JSON.stringify(materiData));
       alert("✅ Materi berhasil disimpan!");
       location.reload();
     });
 
+    // Hapus materi
     document.getElementById("deleteBtn").addEventListener("click", () => {
       if (confirm("Yakin ingin menghapus materi ini?")) {
         materiData.splice(currentIndex, 1);
