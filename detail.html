@@ -3,20 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Detail Materi</title>
+  <title>Detail Materi | CyberDiary</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
+
   <style>
     body {
       font-family: "Poppins", sans-serif;
-      background: linear-gradient(135deg, #fef6ff, #e0e7ff);
+      background: linear-gradient(135deg, #fdf4ff, #f0f9ff);
       margin: 0;
       padding: 0;
       color: #1e293b;
     }
 
     .navbar {
-      background: #7c3aed;
+      background: #a855f7;
       color: white;
       padding: 16px 24px;
       display: flex;
@@ -28,12 +29,11 @@
     .navbar h1 {
       margin: 0;
       font-size: 20px;
-      letter-spacing: 0.5px;
     }
 
     .navbar button {
       background: white;
-      color: #7c3aed;
+      color: #a855f7;
       border: none;
       padding: 8px 14px;
       border-radius: 8px;
@@ -41,8 +41,9 @@
       font-weight: 600;
       transition: 0.2s;
     }
+
     .navbar button:hover {
-      background: #ede9fe;
+      background: #f3e8ff;
     }
 
     .container {
@@ -53,33 +54,29 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       overflow: hidden;
       padding: 32px;
-      transition: 0.3s;
     }
 
-    img {
-      width: 100%;
-      height: 300px;
-      object-fit: cover;
+    .drop-zone {
+      border: 2px dashed #a855f7;
       border-radius: 16px;
-      margin-bottom: 10px;
-      transition: 0.3s;
-    }
-
-    .change-img-btn {
-      display: block;
-      margin: 0 auto 24px;
-      background: #9333ea;
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-weight: 600;
+      padding: 24px;
+      text-align: center;
+      color: #a855f7;
+      margin-bottom: 20px;
       cursor: pointer;
-      transition: 0.2s;
+      transition: background-color 0.3s ease;
     }
 
-    .change-img-btn:hover {
-      background: #a855f7;
+    .drop-zone.dragover {
+      background-color: #f3e8ff;
+    }
+
+    img#materiImg {
+      width: 100%;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      max-height: 350px;
+      object-fit: cover;
     }
 
     h1.editable, p.editable {
@@ -91,8 +88,8 @@
 
     h1.editable:focus, p.editable:focus {
       outline: none;
-      border-color: #7c3aed;
-      background: #f5f3ff;
+      border-color: #a855f7;
+      background: #f3e8ff;
     }
 
     .toolbar {
@@ -102,18 +99,19 @@
       margin-bottom: 20px;
     }
 
-    button {
+    button.action {
       border: none;
       cursor: pointer;
       padding: 10px 16px;
       border-radius: 10px;
       font-weight: 600;
       transition: all 0.2s ease;
+      color: white;
     }
 
-    #editBtn { background: #7c3aed; color: white; }
-    #saveBtn { background: #10b981; color: white; }
-    #deleteBtn { background: #ef4444; color: white; }
+    #editBtn { background: #a855f7; }
+    #saveBtn { background: #10b981; display: none; }
+    #deleteBtn { background: #ef4444; }
     button:hover { transform: scale(1.05); }
 
     #materiContent {
@@ -129,10 +127,6 @@
       font-size: 14px;
       margin-top: 40px;
     }
-
-    input[type="file"] {
-      display: none;
-    }
   </style>
 </head>
 <body>
@@ -143,14 +137,16 @@
 
   <div class="container">
     <div class="toolbar">
-      <button id="editBtn">✏️ Edit</button>
-      <button id="saveBtn" style="display:none;">💾 Simpan</button>
-      <button id="deleteBtn">🗑 Hapus</button>
+      <button id="editBtn" class="action">✏️ Edit</button>
+      <button id="saveBtn" class="action">💾 Simpan</button>
+      <button id="deleteBtn" class="action">🗑 Hapus</button>
     </div>
 
+    <div class="drop-zone" id="dropZone">
+      📷 Drag & Drop / Paste Gambar di sini
+      <input type="file" id="imageInput" accept="image/*" hidden>
+    </div>
     <img id="materiImg" src="" alt="Gambar Materi">
-    <input type="file" id="imgUpload" accept="image/*">
-    <button class="change-img-btn" id="changeImgBtn" style="display:none;">🖼 Ganti Gambar</button>
 
     <h1 id="materiTitle" contenteditable="false" class="editable"></h1>
     <p id="materiDesc" contenteditable="false" class="editable"></p>
@@ -159,7 +155,7 @@
   </div>
 
   <footer>
-    © 2025 CyberDiary — Personal Learning Journal
+    © 2025 CyberDiary — Catatan belajar pribadi.
   </footer>
 
   <script>
@@ -168,70 +164,50 @@
     let materi = materiData[currentIndex];
     let editor;
 
-    const materiImg = document.getElementById("materiImg");
-    const imgUpload = document.getElementById("imgUpload");
-    const changeImgBtn = document.getElementById("changeImgBtn");
+    const imgElement = document.getElementById("materiImg");
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("imageInput");
     const editBtn = document.getElementById("editBtn");
     const saveBtn = document.getElementById("saveBtn");
 
-    materiImg.src = materi.image;
     document.getElementById("materiTitle").innerText = materi.title;
     document.getElementById("materiDesc").innerText = materi.desc;
+    imgElement.src = materi.image || "";
     document.getElementById("materiContent").innerHTML = materi.content || "<p><i>(Belum ada isi materi)</i></p>";
 
+    // 🔹 Fungsi kembali ke home
     function goHome() {
       window.location.href = "index.html";
     }
 
+    // 🔹 Aktifkan edit mode
     editBtn.addEventListener("click", () => {
       document.getElementById("materiTitle").contentEditable = "true";
       document.getElementById("materiDesc").contentEditable = "true";
-      changeImgBtn.style.display = "block";
+      dropZone.style.display = "block";
 
-      ClassicEditor
-        .create(document.querySelector("#materiContent"), {
-          toolbar: [
-            'heading', '|', 'bold', 'italic', 'link', 'bulletedList',
-            'numberedList', 'blockQuote', 'insertTable', 'undo', 'redo', 'imageUpload'
-          ]
-        })
+      ClassicEditor.create(document.querySelector("#materiContent"))
         .then(newEditor => {
           editor = newEditor;
           editBtn.style.display = "none";
           saveBtn.style.display = "inline-block";
         })
-        .catch(error => console.error(error));
+        .catch(err => console.error(err));
     });
 
-    // Ganti gambar
-    changeImgBtn.addEventListener("click", () => {
-      imgUpload.click();
-    });
-
-    imgUpload.addEventListener("change", (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          materiImg.src = e.target.result;
-          materi.image = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Simpan perubahan
+    // 🔹 Simpan perubahan
     saveBtn.addEventListener("click", () => {
       materi.title = document.getElementById("materiTitle").innerText.trim();
       materi.desc = document.getElementById("materiDesc").innerText.trim();
       materi.content = editor.getData();
+      materi.image = imgElement.src;
 
       localStorage.setItem("materiData", JSON.stringify(materiData));
       alert("✅ Materi berhasil disimpan!");
       location.reload();
     });
 
-    // Hapus materi
+    // 🔹 Hapus materi
     document.getElementById("deleteBtn").addEventListener("click", () => {
       if (confirm("Yakin ingin menghapus materi ini?")) {
         materiData.splice(currentIndex, 1);
@@ -239,6 +215,37 @@
         window.location.href = "index.html";
       }
     });
+
+    // 🔹 Upload gambar: klik, drag-drop, paste
+    dropZone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
+
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      handleFile(e.dataTransfer.files[0]);
+    });
+
+    document.addEventListener("paste", (e) => {
+      const item = e.clipboardData.items[0];
+      if (item && item.type.startsWith("image/")) {
+        handleFile(item.getAsFile());
+      }
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        imgElement.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
   </script>
 </body>
 </html>
