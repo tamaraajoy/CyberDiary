@@ -139,9 +139,7 @@
     <button onclick="window.location.href='tambah.html'">➕ Tambah Materi</button>
   </div>
 
-  <div class="container" id="materiContainer">
-    <!-- Card akan ditambahkan lewat JavaScript -->
-  </div>
+  <div class="container" id="materiContainer"></div>
 
   <div class="empty" id="emptyText" style="display:none;">
     Belum ada materi ditambahkan 💡 <br>
@@ -150,55 +148,74 @@
 
   <footer>© 2025 CyberLearn — Belajar Menjadi Seru 🚀</footer>
 
-  <script>
+  <!-- 🔹 Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+    // 🔹 Konfigurasi Firebase kamu
+    const firebaseConfig = {
+      apiKey: "AIzaSyBsc11I-9mRgZ6dTkqfsraOk9ia1Um8OHk",
+      authDomain: "cyberdiary-27223.firebaseapp.com",
+      databaseURL: "https://cyberdiary-27223-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "cyberdiary-27223",
+      storageBucket: "cyberdiary-27223.firebasestorage.app",
+      messagingSenderId: "32458241213",
+      appId: "1:32458241213:web:3a2e5fa15931096c15f3d4",
+      measurementId: "G-N246T9LLQM"
+    };
+
+    // 🔹 Inisialisasi Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
     const container = document.getElementById("materiContainer");
     const emptyText = document.getElementById("emptyText");
-    let materiData = JSON.parse(localStorage.getItem("materiData")) || [];
 
-    function renderMateri() {
+    // 🔹 Ambil data realtime dari Firebase
+    const materiRef = ref(db, "materi");
+    onValue(materiRef, (snapshot) => {
       container.innerHTML = "";
-
-      if (materiData.length === 0) {
+      if (!snapshot.exists()) {
         emptyText.style.display = "block";
         return;
-      } else {
-        emptyText.style.display = "none";
       }
 
-      materiData.forEach((materi, index) => {
+      emptyText.style.display = "none";
+      const materiData = snapshot.val();
+
+      // 🔹 Tampilkan setiap card materi
+      Object.entries(materiData).forEach(([id, materi]) => {
         const card = document.createElement("div");
         card.className = "card";
-
         card.innerHTML = `
           <img src="${materi.image}" alt="${materi.title}">
           <div class="card-content">
             <h2>${materi.title}</h2>
             <p>${materi.desc}</p>
             <div class="card-buttons">
-              <button class="btn btn-detail" onclick="bukaDetail(${index})">🔍 Lihat</button>
-              <button class="btn btn-delete" onclick="hapusMateri(${index})">🗑 Hapus</button>
+              <button class="btn btn-detail" onclick="bukaDetail('${id}')">🔍 Lihat</button>
+              <button class="btn btn-delete" onclick="hapusMateri('${id}')">🗑 Hapus</button>
             </div>
           </div>
         `;
-
         container.appendChild(card);
       });
-    }
+    });
 
-    function bukaDetail(index) {
-      localStorage.setItem("currentMateri", index);
+    // 🔹 Buka detail
+    window.bukaDetail = (id) => {
+      localStorage.setItem("currentMateri", id);
       window.location.href = "detail.html";
-    }
+    };
 
-    function hapusMateri(index) {
+    // 🔹 Hapus materi dari Firebase
+    window.hapusMateri = async (id) => {
       if (confirm("Yakin mau hapus materi ini?")) {
-        materiData.splice(index, 1);
-        localStorage.setItem("materiData", JSON.stringify(materiData));
-        renderMateri();
+        await remove(ref(db, "materi/" + id));
+        alert("🗑 Materi berhasil dihapus!");
       }
-    }
-
-    renderMateri();
+    };
   </script>
 </body>
 </html>

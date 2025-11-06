@@ -26,106 +26,58 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    .navbar h1 {
-      margin: 0;
-      font-size: 20px;
-    }
-
+    .navbar h1 { margin: 0; font-size: 20px; }
     .navbar button {
-      background: white;
-      color: #a855f7;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.2s;
+      background: white; color: #a855f7; border: none;
+      padding: 8px 14px; border-radius: 8px;
+      cursor: pointer; font-weight: 600; transition: 0.2s;
     }
-
-    .navbar button:hover {
-      background: #f3e8ff;
-    }
+    .navbar button:hover { background: #f3e8ff; }
 
     .container {
-      max-width: 900px;
-      background: white;
-      margin: 40px auto;
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      overflow: hidden;
+      max-width: 900px; background: white; margin: 40px auto;
+      border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       padding: 32px;
     }
 
     .drop-zone {
-      border: 2px dashed #a855f7;
-      border-radius: 16px;
-      padding: 24px;
-      text-align: center;
-      color: #a855f7;
-      margin-bottom: 20px;
-      cursor: pointer;
+      border: 2px dashed #a855f7; border-radius: 16px;
+      padding: 24px; text-align: center; color: #a855f7;
+      margin-bottom: 20px; cursor: pointer;
       transition: background-color 0.3s ease;
     }
-
-    .drop-zone.dragover {
-      background-color: #f3e8ff;
-    }
+    .drop-zone.dragover { background-color: #f3e8ff; }
 
     img#materiImg {
-      width: 100%;
-      border-radius: 16px;
-      margin-bottom: 20px;
-      max-height: 350px;
-      object-fit: cover;
+      width: 100%; border-radius: 16px; margin-bottom: 20px;
+      max-height: 350px; object-fit: cover;
     }
 
     h1.editable, p.editable {
-      border: 1px solid transparent;
-      padding: 6px;
-      border-radius: 8px;
+      border: 1px solid transparent; padding: 6px; border-radius: 8px;
       transition: 0.2s;
     }
-
     h1.editable:focus, p.editable:focus {
-      outline: none;
-      border-color: #a855f7;
-      background: #f3e8ff;
+      outline: none; border-color: #a855f7; background: #f3e8ff;
     }
 
     .toolbar {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-bottom: 20px;
+      display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;
     }
-
     button.action {
-      border: none;
-      cursor: pointer;
-      padding: 10px 16px;
-      border-radius: 10px;
-      font-weight: 600;
-      transition: all 0.2s ease;
-      color: white;
+      border: none; cursor: pointer; padding: 10px 16px;
+      border-radius: 10px; font-weight: 600; transition: all 0.2s ease; color: white;
     }
-
     #editBtn { background: #a855f7; }
     #saveBtn { background: #10b981; display: none; }
     #deleteBtn { background: #ef4444; }
     button:hover { transform: scale(1.05); }
 
-    #materiContent {
-      margin-top: 20px;
-      line-height: 1.8;
-      color: #334155;
-    }
+    #materiContent { margin-top: 20px; line-height: 1.8; color: #334155; }
 
     footer {
-      text-align: center;
-      padding: 16px;
-      color: #64748b;
-      font-size: 14px;
-      margin-top: 40px;
+      text-align: center; padding: 16px; color: #64748b;
+      font-size: 14px; margin-top: 40px;
     }
   </style>
 </head>
@@ -154,39 +106,66 @@
     <div id="materiContent"></div>
   </div>
 
-  <footer>
-    © 2025 CyberDiary — Catatan belajar pribadi.
-  </footer>
+  <footer>© 2025 CyberDiary — Catatan belajar pribadi.</footer>
 
-  <script>
-    let materiData = JSON.parse(localStorage.getItem("materiData")) || [];
-    let currentIndex = localStorage.getItem("currentMateri");
-    let materi = materiData[currentIndex];
-    let editor;
+  <!-- 🔹 Firebase Integration -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getDatabase, ref, get, update, remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBsc11I-9mRgZ6dTkqfsraOk9ia1Um8OHk",
+      authDomain: "cyberdiary-27223.firebaseapp.com",
+      databaseURL: "https://cyberdiary-27223-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "cyberdiary-27223",
+      storageBucket: "cyberdiary-27223.firebasestorage.app",
+      messagingSenderId: "32458241213",
+      appId: "1:32458241213:web:3a2e5fa15931096c15f3d4",
+      measurementId: "G-N246T9LLQM"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // 🔹 Ambil ID materi yang dibuka
+    const materiId = localStorage.getItem("currentMateri");
+    const materiRef = ref(db, "materi/" + materiId);
 
     const imgElement = document.getElementById("materiImg");
     const dropZone = document.getElementById("dropZone");
     const fileInput = document.getElementById("imageInput");
     const editBtn = document.getElementById("editBtn");
     const saveBtn = document.getElementById("saveBtn");
+    const titleEl = document.getElementById("materiTitle");
+    const descEl = document.getElementById("materiDesc");
+    const contentEl = document.getElementById("materiContent");
+    let editor;
+    let currentMateri = {};
 
-    document.getElementById("materiTitle").innerText = materi.title;
-    document.getElementById("materiDesc").innerText = materi.desc;
-    imgElement.src = materi.image || "";
-    document.getElementById("materiContent").innerHTML = materi.content || "<p><i>(Belum ada isi materi)</i></p>";
+    // 🔹 Load data materi dari Firebase
+    get(materiRef).then(snapshot => {
+      if (snapshot.exists()) {
+        currentMateri = snapshot.val();
+        titleEl.innerText = currentMateri.title;
+        descEl.innerText = currentMateri.desc;
+        imgElement.src = currentMateri.image || "";
+        contentEl.innerHTML = currentMateri.content || "<p><i>(Belum ada isi materi)</i></p>";
+      } else {
+        alert("Materi tidak ditemukan!");
+        window.location.href = "index.html";
+      }
+    });
 
     // 🔹 Fungsi kembali ke home
-    function goHome() {
-      window.location.href = "index.html";
-    }
+    window.goHome = () => window.location.href = "index.html";
 
     // 🔹 Aktifkan edit mode
     editBtn.addEventListener("click", () => {
-      document.getElementById("materiTitle").contentEditable = "true";
-      document.getElementById("materiDesc").contentEditable = "true";
+      titleEl.contentEditable = "true";
+      descEl.contentEditable = "true";
       dropZone.style.display = "block";
 
-      ClassicEditor.create(document.querySelector("#materiContent"))
+      ClassicEditor.create(contentEl)
         .then(newEditor => {
           editor = newEditor;
           editBtn.style.display = "none";
@@ -195,28 +174,30 @@
         .catch(err => console.error(err));
     });
 
-    // 🔹 Simpan perubahan
-    saveBtn.addEventListener("click", () => {
-      materi.title = document.getElementById("materiTitle").innerText.trim();
-      materi.desc = document.getElementById("materiDesc").innerText.trim();
-      materi.content = editor.getData();
-      materi.image = imgElement.src;
+    // 🔹 Simpan ke Firebase
+    saveBtn.addEventListener("click", async () => {
+      const updatedData = {
+        title: titleEl.innerText.trim(),
+        desc: descEl.innerText.trim(),
+        image: imgElement.src,
+        content: editor.getData(),
+      };
 
-      localStorage.setItem("materiData", JSON.stringify(materiData));
+      await update(materiRef, updatedData);
       alert("✅ Materi berhasil disimpan!");
       location.reload();
     });
 
     // 🔹 Hapus materi
-    document.getElementById("deleteBtn").addEventListener("click", () => {
+    document.getElementById("deleteBtn").addEventListener("click", async () => {
       if (confirm("Yakin ingin menghapus materi ini?")) {
-        materiData.splice(currentIndex, 1);
-        localStorage.setItem("materiData", JSON.stringify(materiData));
+        await remove(materiRef);
+        alert("🗑 Materi telah dihapus!");
         window.location.href = "index.html";
       }
     });
 
-    // 🔹 Upload gambar: klik, drag-drop, paste
+    // 🔹 Upload gambar (klik, drag-drop, atau paste)
     dropZone.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
 

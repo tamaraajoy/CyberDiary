@@ -5,8 +5,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tambah Materi | CyberLearn</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
   <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #dbeafe, #fef9c3);
+      margin: 0;
+      padding: 0;
+      color: #1e293b;
+    }
+
+    .navbar {
+      background: #4f46e5;
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .navbar button {
+      background: white;
+      color: #4f46e5;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .navbar button:hover {
+      background: #e0e7ff;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+
     .form-container {
       display: flex;
       flex-direction: column;
@@ -75,6 +116,12 @@
       opacity: 0.9;
     }
 
+    footer {
+      text-align: center;
+      color: #64748b;
+      margin-top: 30px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -106,22 +153,62 @@
 
   <footer>© 2025 CyberLearn — Belajar Menyenangkan 🌈</footer>
 
-  <script>
-    const form = document.getElementById("materiForm");
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
 
-    form.addEventListener("submit", (e) => {
+    // 🔹 Konfigurasi Firebase kamu
+    const firebaseConfig = {
+      apiKey: "AIzaSyBsc11I-9mRgZ6dTkqfsraOk9ia1Um8OHk",
+      authDomain: "cyberdiary-27223.firebaseapp.com",
+      databaseURL: "https://cyberdiary-27223-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "cyberdiary-27223",
+      storageBucket: "cyberdiary-27223.firebasestorage.app",
+      messagingSenderId: "32458241213",
+      appId: "1:32458241213:web:3a2e5fa15931096c15f3d4",
+      measurementId: "G-N246T9LLQM"
+    };
+
+    // 🔹 Inisialisasi Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // 🔹 Tangani submit form
+    const form = document.getElementById("materiForm");
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      let materiData = JSON.parse(localStorage.getItem("materiData")) || [];
-      let newMateri = {
-        title: title.value,
-        image: image.value || "https://placehold.co/600x400?text=CyberLearn",
-        desc: desc.value,
+
+      const title = document.getElementById("title").value.trim();
+      const desc = document.getElementById("desc").value.trim();
+
+      if (!title || !desc) {
+        alert("Mohon isi semua kolom!");
+        return;
+      }
+
+      // Data materi baru
+      const newMateri = {
+        title: title,
+        image: "https://placehold.co/600x400?text=CyberLearn",
+        desc: desc,
         content: ""
       };
-      materiData.push(newMateri);
-      localStorage.setItem("materiData", JSON.stringify(materiData));
-      localStorage.setItem("currentMateri", materiData.length - 1);
-      window.location.href = "detail.html";
+
+      try {
+        // Simpan ke Firebase
+        const newRef = push(ref(db, "materi"));
+        await set(newRef, newMateri);
+
+        // Simpan ID materi ke localStorage untuk halaman detail
+        localStorage.setItem("currentMateri", newRef.key);
+
+        alert("✅ Materi berhasil ditambahkan!");
+        window.location.href = "detail.html";
+      } catch (err) {
+        console.error("Gagal menyimpan ke Firebase:", err);
+        alert("❌ Gagal menyimpan materi, coba lagi.");
+      }
     });
   </script>
 </body>
